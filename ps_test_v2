@@ -1,0 +1,7 @@
+Get-ADUser -Filter * -SearchBase "OU=Company1,DC=company,DC=local" -SearchScope Subtree | ForEach-Object {
+   $ouParts = $_.DistinguishedName -split "," | Where-Object { $_ -like "OU=*" }
+   $ouPath = $ouParts -replace "OU=", ""
+   $company = $ouPath[-1]
+   $department = if ($ouPath.Length -ge 2) {$ouPath[0]} else {""}
+   Set-ADUser $_ -Company $company -Department $department
+}
