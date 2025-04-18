@@ -1,0 +1,15 @@
+$ouBase = "LDAP://OU=Company1,DC=company,DC=local"
+$searcher = New-Object DirectoryServices.DirectorySearcher([ADSI]$ouBase)
+$searcher.Filter = "(objectClass=user)"
+$searcher.PageSize = 1000
+$searcher.SearchScope = "Subtree"
+foreach ($entry in $searcher.FindAll()) {
+   $dn = $entry.Properties.distinguishedname[0]
+   $ou = ($dn -split "," | Where-Object { $_ -like "OU=*" }) -replace "^OU=", ""
+   $company = $ou[-1]
+   $department = if ($ou.Length -ge 2) { $ou[0] } else { "" }
+   $user = [ADSI]("LDAP://$dn")
+   $user.Put("company", $company)
+   $user.Put("department", $department)
+   $user.SetInfo()
+}
